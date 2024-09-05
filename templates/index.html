@@ -173,84 +173,27 @@
             }
         });
 
+        // Функция для начала анимации "говорения"
+        function startTalking() {
+            clearInterval(interval);  // Останавливаем вращение моделей
+            loadModel('/static/models/android3.glb');  // Загружаем специальную модель для "говорения"
+        }
+
+        // Функция для остановки анимации "говорения" и возвращения к обычной ротации моделей
+        function stopTalking() {
+            startModelRotation();  // Возобновляем вращение моделей
+        }
+
         // Three.js scene setup
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(100, window.innerWidth / window.innerHeight, 0.1, 500);
         camera.position.set(0, 0, 3);  // Отодвигаем камеру назад
 
         const renderer = new THREE.WebGLRenderer({ alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight * 0.6);  // Устанавливаем размер рендерера
         document.getElementById('container').appendChild(renderer.domElement);
 
-        /*const loader = new THREE.GLTFLoader();
-        const loadingElement = document.getElementById('loading');
-        let currentModel;
-        const modelUrls = ['/static/models/android1.glb', '/static/models/android2.glb'];
-        let modelIndex = 0;
-        let interval;
 
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-            light.position.set(10, 10, 10);
-            scene.add(light);
-
-            const ambientLight = new THREE.AmbientLight(0x404040); // мягкий свет
-            scene.add(ambientLight);
-
-        function loadModel(url, callback) {
-            loader.load(url, function(gltf) {
-                if (currentModel) {
-                    scene.remove(currentModel);
-                }
-                currentModel = gltf.scene;
-                currentModel.scale.set(1.0, 1.0, 1.0);  // Масштабирование модели
-                currentModel.rotation.y = 0;  // Поворот модели на 180 градусов по оси Y, чтобы она смотрела фронтально
-;
-                scene.add(currentModel);
-                if (callback) callback();
-            }, function(xhr) {
-                loadingElement.style.display = 'block';
-            }, function(error) {
-                console.error(error);
-                loadingElement.innerText = 'Failed to load model';
-            });
-        }
-
-        function startModelRotation() {
-            interval = setInterval(() => {
-                modelIndex = (modelIndex + 1) % modelUrls.length;
-                loadModel(modelUrls[modelIndex]);
-            }, 3000);
-        }
-
-        function startTalking() {
-            clearInterval(interval);
-            loadModel('/static/models/android3.glb');
-        }
-
-        function stopTalking() {
-            startModelRotation();
-        }
-
-        loader.load(modelUrls[modelIndex], function(gltf) {
-            currentModel = gltf.scene;
-            currentModel.scale.set(1.5, 1.5, 1.5);  // Масштабирование модели
-            currentModel.rotation.y = Math.PI;  // Поворот модели на 180 градусов по оси Y
-            scene.add(currentModel);
-            startModelRotation();
-            animate();
-        }, function(xhr) {
-            loadingElement.style.display = 'block';
-        }, function(error) {
-            console.error(error);
-            loadingElement.innerText = 'Failed to load model';
-        });
-
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-        animate();
-        */
 
 
         const loader = new THREE.GLTFLoader();  // Создаем загрузчик GLTF моделей
@@ -266,73 +209,63 @@
         const ambientLight = new THREE.AmbientLight(0x404040); // мягкий свет
         scene.add(ambientLight);
 
-        // Функция для загрузки модели
-        function loadModel(url, callback) {
-            loader.load(url, function (gltf) {  // Загружаем модель по URL
-                if (currentModel) {  // Если модель уже загружена, удаляем её из сцены
-                    scene.remove(currentModel);
+        // Функция для плавного вращения модели с 0 до 180 градусов
+        function rotateModelRightToLeft() {
+            const targetRotation = Math.PI * 2;  // Цель: 360 градусов (π радиан)
+            const rotationSpeed = 0.02;  // Скорость вращения
+            const interval = setInterval(() => {
+                if (currentModel.rotation.y < targetRotation) {
+                    currentModel.rotation.y += rotationSpeed;
+                    if (currentModel.rotation.y >= targetRotation) {
+                        currentModel.rotation.y = targetRotation;
+                        clearInterval(interval);  // Остановка вращения после достижения 180 градусов
+                        setTimeout(() => {
+                            rotateModelLeftToRight();  // После паузы поворот в обратную сторону
+                        }, 3000);  // Пауза на 3 секунды
+                    }
                 }
-                currentModel = gltf.scene;  // Сохраняем загруженную модель как текущую
-                currentModel.scale.set(1.5, 1.5, 1.5);  // Масштабируем модель
-                currentModel.rotation.y = Math.PI;  // Устанавливаем поворот модели по оси Y на 0 градусов
-                scene.add(currentModel);  // Добавляем модель на сцену
-                if (callback) callback();  // Если передан callback, вызываем его
-            }, function (xhr) {
-                loadingElement.style.display = 'block';  // Показываем элемент загрузки
-            }, function (error) {
-                console.error(error);  // Выводим ошибку в консоль, если загрузка не удалась
-                loadingElement.innerText = 'Failed to load model';  // Показываем сообщение об ошибке загрузки
-            });
+            }, 16);  // Обновление каждые ~16 мс (60 FPS)
         }
 
-        // Функция для начала вращения моделей
-        function startModelRotation() {
-            interval = setInterval(() => {  // Устанавливаем интервал для смены моделей
-                modelIndex = (modelIndex + 1) % modelUrls.length;  // Увеличиваем индекс модели с цикличным возвратом к началу
-                loadModel(modelUrls[modelIndex]);  // Загружаем новую модель
-            }, 3000);  // Каждые 3 секунды
+        function rotateModelLeftToRight(targetRotation = 0, rotationSpeed = 0.02, callback) {
+            const updateRotation = () => {
+                if (currentModel.rotation.y > targetRotation) {
+                    currentModel.rotation.y -= rotationSpeed;
+                    if (currentModel.rotation.y <= targetRotation) {
+                        currentModel.rotation.y = targetRotation;
+                        if (callback) callback();  // Вызов колбэка, если он есть
+                    } else {
+                        requestAnimationFrame(updateRotation);
+                    }
+                }
+            };
+
+            loadingElement.style.display = 'none';  // Убираем надпись "Loading please wait"
+            requestAnimationFrame(updateRotation);  // Запускаем анимацию
         }
 
-        // Функция для вращения модели
-        function rotateModel() {
-            if (currentModel) {
-                currentModel.rotation.y += 0.01;  // Вращаем модель по оси Y
-            }
-        }
+        // Загрузка первой модели и начало анимации
+        loader.load(modelUrls[0], function (gltf) {
+            currentModel = gltf.scene;
+            currentModel.scale.set(1.4, 1.4, 1.4);
+            currentModel.rotation.y = 0;  // Начинаем с 0 градусов
+            scene.add(currentModel);
 
-        // Функция для начала анимации "говорения"
-        function startTalking() {
-            clearInterval(interval);  // Останавливаем вращение моделей
-            loadModel('/static/models/android3.glb');  // Загружаем специальную модель для "говорения"
-        }
-
-        // Функция для остановки анимации "говорения" и возвращения к обычной ротации моделей
-        function stopTalking() {
-            startModelRotation();  // Возобновляем вращение моделей
-        }
-
-        // Изначальная загрузка первой модели и настройка сцены
-        loader.load(modelUrls[modelIndex], function (gltf) {
-            currentModel = gltf.scene;  // Загружаем начальную модель
-            currentModel.scale.set(1.5, 1.5, 1.5);  // Масштабируем модель
-            currentModel.rotation.y = 0;  // Устанавливаем поворот модели по оси Y на 0 градусов
-            scene.add(currentModel);  // Добавляем модель на сцену
-            startModelRotation();  // Запускаем вращение моделей
-            animate();  // Запускаем анимацию
+            rotateModelRightToLeft();  // Плавно поворачиваем модель до 180 градусов
+            animate();  // Запуск анимации сцены
         }, function (xhr) {
-            loadingElement.style.display = 'block';  // Показываем индикатор загрузки
+            loadingElement.style.display = 'block';
         }, function (error) {
-            console.error(error);  // Выводим ошибку загрузки в консоль
-            loadingElement.innerText = 'Failed to load model';  // Показываем сообщение об ошибке загрузки
+            console.error(error);
+            loadingElement.innerText = 'Failed to load model';
         });
 
-        // Функция для запуска анимации сцены
+        // Анимация сцены
         function animate() {
-            requestAnimationFrame(animate);  // Рекурсивно вызываем animate для постоянной перерисовки сцены
-            rotateModel();  // Вызываем функцию для вращения модели
-            renderer.render(scene, camera);  // Рендерим сцену с текущей камерой
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
         }
-        animate();  // Запускаем анимацию
+
     </script>
 </body>
 
