@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Telegram Web App with 3D Model</title>
@@ -20,11 +21,13 @@
             height: 100vh;
             overflow: hidden;
         }
+
         #container {
             width: 100%;
             height: 60%;
             position: relative;
         }
+
         #input-container {
             display: flex;
             justify-content: center;
@@ -38,9 +41,11 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s ease;
         }
+
         #input-container:hover {
             background-color: #3b556f;
         }
+
         #text-input {
             flex: 1;
             padding: 10px;
@@ -51,11 +56,14 @@
             background-color: #3b556f;
             color: #ecf0f1;
             transition: background-color 0.3s ease;
-            resize: none; /* Отключить ручное изменение размера */
+            resize: none;
+            /* Отключить ручное изменение размера */
         }
+
         #text-input:focus {
             background-color: #4a6b8c;
         }
+
         #send-button {
             background-color: #1abc9c;
             border: none;
@@ -65,13 +73,16 @@
             margin-left: 10px;
             transition: background-color 0.3s ease;
         }
+
         #send-button:hover {
             background-color: #16a085;
         }
+
         #send-button img {
             width: 24px;
             height: 24px;
         }
+
         #response-text {
             margin-top: 20px;
             padding: 20px;
@@ -84,6 +95,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             overflow-wrap: break-word;
         }
+
         #loading {
             position: absolute;
             top: 50%;
@@ -92,16 +104,20 @@
             font-size: 20px;
             display: none;
         }
+
         @media screen and (max-width: 768px) {
             #container {
                 height: 50%;
             }
-            #input-container, #response-text {
+
+            #input-container,
+            #response-text {
                 max-width: 90%;
             }
         }
     </style>
 </head>
+
 <body>
     <div id="container">
         <div id="loading">Loading please wait</div>
@@ -134,23 +150,23 @@
                 },
                 body: JSON.stringify({ message: text })
             })
-            .then(response => response.json())
-            .then(data => {
-                const audio = new Audio(data.audio_file);
-                startTalking();
-                audio.play();
-                audio.onended = function() {
-                    stopTalking();
-                };
-                document.getElementById('text-input').value = '';
-                document.getElementById('response-text').innerText = data.reply;
-                adjustTextareaHeight(document.getElementById('response-text'));
-            });
+                .then(response => response.json())
+                .then(data => {
+                    const audio = new Audio(data.audio_file);
+                    startTalking();
+                    audio.play();
+                    audio.onended = function () {
+                        stopTalking();
+                    };
+                    document.getElementById('text-input').value = '';
+                    document.getElementById('response-text').innerText = data.reply;
+                    adjustTextareaHeight(document.getElementById('response-text'));
+                });
         }
 
         document.getElementById('send-button').addEventListener('click', sendRequest);
 
-        document.getElementById('text-input').addEventListener('keypress', function(event) {
+        document.getElementById('text-input').addEventListener('keypress', function (event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
                 sendRequest();
@@ -235,88 +251,89 @@
         }
         animate();
         */
-       
 
-const loader = new THREE.GLTFLoader();  // Создаем загрузчик GLTF моделей
-const loadingElement = document.getElementById('loading');  // Элемент для отображения статуса загрузки
-let currentModel;  // Переменная для текущей модели
-const modelUrls = ['/static/models/android1.glb', '/static/models/android2.glb'];  // URL-адреса моделей
-let modelIndex = 0;  // Индекс текущей модели
-let interval;  // Переменная для хранения интервала переключения моделей
-const light = new THREE.DirectionalLight(0xffffff, 1);
-            light.position.set(10, 10, 10);
-            scene.add(light);
 
-            const ambientLight = new THREE.AmbientLight(0x404040); // мягкий свет
-            scene.add(ambientLight);
+        const loader = new THREE.GLTFLoader();  // Создаем загрузчик GLTF моделей
+        const loadingElement = document.getElementById('loading');  // Элемент для отображения статуса загрузки
+        let currentModel;  // Переменная для текущей модели
+        const modelUrls = ['/static/models/android1.glb', '/static/models/android2.glb'];  // URL-адреса моделей
+        let modelIndex = 0;  // Индекс текущей модели
+        let interval;  // Переменная для хранения интервала переключения моделей
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(10, 10, 10);
+        scene.add(light);
 
-// Функция для загрузки модели
-function loadModel(url, callback) {
-    loader.load(url, function(gltf) {  // Загружаем модель по URL
-        if (currentModel) {  // Если модель уже загружена, удаляем её из сцены
-            scene.remove(currentModel);
+        const ambientLight = new THREE.AmbientLight(0x404040); // мягкий свет
+        scene.add(ambientLight);
+
+        // Функция для загрузки модели
+        function loadModel(url, callback) {
+            loader.load(url, function (gltf) {  // Загружаем модель по URL
+                if (currentModel) {  // Если модель уже загружена, удаляем её из сцены
+                    scene.remove(currentModel);
+                }
+                currentModel = gltf.scene;  // Сохраняем загруженную модель как текущую
+                currentModel.scale.set(1.5, 1.5, 1.5);  // Масштабируем модель
+                currentModel.rotation.y = Math.PI;  // Устанавливаем поворот модели по оси Y на 0 градусов
+                scene.add(currentModel);  // Добавляем модель на сцену
+                if (callback) callback();  // Если передан callback, вызываем его
+            }, function (xhr) {
+                loadingElement.style.display = 'block';  // Показываем элемент загрузки
+            }, function (error) {
+                console.error(error);  // Выводим ошибку в консоль, если загрузка не удалась
+                loadingElement.innerText = 'Failed to load model';  // Показываем сообщение об ошибке загрузки
+            });
         }
-        currentModel = gltf.scene;  // Сохраняем загруженную модель как текущую
-        currentModel.scale.set(1.5, 1.5, 1.5);  // Масштабируем модель
-        currentModel.rotation.y = Math.PI;  // Устанавливаем поворот модели по оси Y на 0 градусов
-        scene.add(currentModel);  // Добавляем модель на сцену
-        if (callback) callback();  // Если передан callback, вызываем его
-    }, function(xhr) {
-        loadingElement.style.display = 'block';  // Показываем элемент загрузки
-    }, function(error) {
-        console.error(error);  // Выводим ошибку в консоль, если загрузка не удалась
-        loadingElement.innerText = 'Failed to load model';  // Показываем сообщение об ошибке загрузки
-    });
-}
 
-// Функция для начала вращения моделей
-function startModelRotation() {
-    interval = setInterval(() => {  // Устанавливаем интервал для смены моделей
-        modelIndex = (modelIndex + 1) % modelUrls.length;  // Увеличиваем индекс модели с цикличным возвратом к началу
-        loadModel(modelUrls[modelIndex]);  // Загружаем новую модель
-    }, 3000);  // Каждые 3 секунды
-}
+        // Функция для начала вращения моделей
+        function startModelRotation() {
+            interval = setInterval(() => {  // Устанавливаем интервал для смены моделей
+                modelIndex = (modelIndex + 1) % modelUrls.length;  // Увеличиваем индекс модели с цикличным возвратом к началу
+                loadModel(modelUrls[modelIndex]);  // Загружаем новую модель
+            }, 3000);  // Каждые 3 секунды
+        }
 
-// Функция для вращения модели
-function rotateModel() {
-    if (currentModel) {
-        currentModel.rotation.y += 0.01;  // Вращаем модель по оси Y
-    }
-}
+        // Функция для вращения модели
+        function rotateModel() {
+            if (currentModel) {
+                currentModel.rotation.y += 0.01;  // Вращаем модель по оси Y
+            }
+        }
 
-// Функция для начала анимации "говорения"
-function startTalking() {
-    clearInterval(interval);  // Останавливаем вращение моделей
-    loadModel('/static/models/android3.glb');  // Загружаем специальную модель для "говорения"
-}
+        // Функция для начала анимации "говорения"
+        function startTalking() {
+            clearInterval(interval);  // Останавливаем вращение моделей
+            loadModel('/static/models/android3.glb');  // Загружаем специальную модель для "говорения"
+        }
 
-// Функция для остановки анимации "говорения" и возвращения к обычной ротации моделей
-function stopTalking() {
-    startModelRotation();  // Возобновляем вращение моделей
-}
+        // Функция для остановки анимации "говорения" и возвращения к обычной ротации моделей
+        function stopTalking() {
+            startModelRotation();  // Возобновляем вращение моделей
+        }
 
-// Изначальная загрузка первой модели и настройка сцены
-loader.load(modelUrls[modelIndex], function(gltf) {
-    currentModel = gltf.scene;  // Загружаем начальную модель
-    currentModel.scale.set(1.5, 1.5, 1.5);  // Масштабируем модель
-    currentModel.rotation.y = 0;  // Устанавливаем поворот модели по оси Y на 0 градусов
-    scene.add(currentModel);  // Добавляем модель на сцену
-    startModelRotation();  // Запускаем вращение моделей
-    animate();  // Запускаем анимацию
-}, function(xhr) {
-    loadingElement.style.display = 'block';  // Показываем индикатор загрузки
-}, function(error) {
-    console.error(error);  // Выводим ошибку загрузки в консоль
-    loadingElement.innerText = 'Failed to load model';  // Показываем сообщение об ошибке загрузки
-});
+        // Изначальная загрузка первой модели и настройка сцены
+        loader.load(modelUrls[modelIndex], function (gltf) {
+            currentModel = gltf.scene;  // Загружаем начальную модель
+            currentModel.scale.set(1.5, 1.5, 1.5);  // Масштабируем модель
+            currentModel.rotation.y = 0;  // Устанавливаем поворот модели по оси Y на 0 градусов
+            scene.add(currentModel);  // Добавляем модель на сцену
+            startModelRotation();  // Запускаем вращение моделей
+            animate();  // Запускаем анимацию
+        }, function (xhr) {
+            loadingElement.style.display = 'block';  // Показываем индикатор загрузки
+        }, function (error) {
+            console.error(error);  // Выводим ошибку загрузки в консоль
+            loadingElement.innerText = 'Failed to load model';  // Показываем сообщение об ошибке загрузки
+        });
 
-// Функция для запуска анимации сцены
-function animate() {
-    requestAnimationFrame(animate);  // Рекурсивно вызываем animate для постоянной перерисовки сцены
-    rotateModel();  // Вызываем функцию для вращения модели
-    renderer.render(scene, camera);  // Рендерим сцену с текущей камерой
-}
-animate();  // Запускаем анимацию
+        // Функция для запуска анимации сцены
+        function animate() {
+            requestAnimationFrame(animate);  // Рекурсивно вызываем animate для постоянной перерисовки сцены
+            rotateModel();  // Вызываем функцию для вращения модели
+            renderer.render(scene, camera);  // Рендерим сцену с текущей камерой
+        }
+        animate();  // Запускаем анимацию
     </script>
 </body>
+
 </html>
