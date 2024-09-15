@@ -264,7 +264,7 @@
         const loader = new THREE.GLTFLoader();  // Создаем загрузчик GLTF моделей
         const loadingElement = document.getElementById('loading');  // Элемент для отображения статуса загрузки
         let currentModel;  // Переменная для текущей модели
-        const modelUrls = ['/static/models/android1.glb', '/static/models/android2.glb'];  // URL-адреса моделей
+        const modelUrls = ['/static/models/android1.glb'];  // URL-адреса моделей в будущем будет
         let modelIndex = 0;  // Индекс текущей модели
         let interval;  // Переменная для хранения интервала переключения моделей
         const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -312,24 +312,36 @@
         // Загрузка первой модели и начало анимации
         loader.load(modelUrls[0], function (gltf) {
             currentModel = gltf.scene;
-            currentModel.scale.set(1.4, 1.4, 1.4);
+            currentModel.scale.set(1.0, 1.3, 1.0);
             currentModel.rotation.y = 0;  // Начинаем с 0 градусов
             scene.add(currentModel);
+            //анимация кивания у первой модели
+            const mixer = new THREE.AnimationMixer(currentModel);
+            const clip = gltf.animations.find((clip) => clip.name === 'HeadAction');
+            const action = mixer.clipAction(clip);
+            action.play();
 
             rotateModelRightToLeft();  // Плавно поворачиваем модель до 180 градусов
-            animate();  // Запуск анимации сцены
+            animate(mixer);  // Запуск анимации сцены
         }, function (xhr) {
             loadingElement.style.display = 'block';
         }, function (error) {
             console.error(error);
             loadingElement.innerText = 'Failed to load model';
         });
-
+        const clock = new THREE.Clock();
+        //animate(mixer);
         // Анимация сцены
-        function animate() {
-            requestAnimationFrame(animate);
+        function animate(mixer) {
+            requestAnimationFrame(() => animate(mixer));
+
+            const delta = clock.getDelta();
+            mixer.update(delta);
+
             renderer.render(scene, camera);
         }
+
+        
 
     </script>
 </body>
