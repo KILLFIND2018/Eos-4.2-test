@@ -265,7 +265,6 @@
         const loadingElement = document.getElementById('loading');  // Элемент для отображения статуса загрузки
         let currentModel;  // Переменная для текущей модели
         const modelUrls = ['/static/models/android1.glb'];  // URL-адреса моделей в будущем будет
-        let modelIndex = 0;  // Индекс текущей модели
         let interval;  // Переменная для хранения интервала переключения моделей
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(10, 10, 10);
@@ -274,9 +273,9 @@
         const ambientLight = new THREE.AmbientLight(0x404040); // мягкий свет
         scene.add(ambientLight);
 
-        // Функция для плавного вращения модели с 0 до 180 градусов
+        // Функция для плавного вращения модели с 0 до 180 градусов по часовой стрелке
         function rotateModelRightToLeft() {
-            const targetRotation = Math.PI * 2;  // Цель: 360 градусов (π радиан)
+            const targetRotation = Math.PI / 2;  // Цель: 360 градусов (π радиан)
             const rotationSpeed = 0.02;  // Скорость вращения
             const interval = setInterval(() => {
                 if (currentModel.rotation.y < targetRotation) {
@@ -309,7 +308,7 @@
             requestAnimationFrame(updateRotation);  // Запускаем анимацию
         }
 
-        // Загрузка первой модели и начало анимации
+        // Загрузка первой модели и начало анимации против часовой
         loader.load(modelUrls[0], function (gltf) {
             currentModel = gltf.scene;
             currentModel.scale.set(1.0, 1.3, 1.0);
