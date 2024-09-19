@@ -230,7 +230,10 @@
         // Функция для начала анимации "говорения"
         function startTalking() {
             clearInterval(interval);  // Останавливаем вращение моделей
-            rotateModelRightToLeft('/static/models/android3.glb');  // Загружаем специальную модель для "говорения"
+            rotateModelRightToLeft('/static/models/android.glb');  // Загружаем специальную модель для "говорения"
+
+
+
         }
 
         // Функция для остановки анимации "говорения" и возвращения к обычной ротации моделей
@@ -244,6 +247,7 @@
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
                 sendRequest();
+
             }
         });
 
@@ -264,12 +268,13 @@
         const loader = new THREE.GLTFLoader();  // Создаем загрузчик GLTF моделей
         const loadingElement = document.getElementById('loading');  // Элемент для отображения статуса загрузки
         let currentModel;  // Переменная для текущей модели
-        const modelUrls = ['/static/models/android1.glb'];  // URL-адреса моделей в будущем будет
+        const modelUrls = ['/static/models/android.glb'];  // URL-адреса моделей в будущем будет
         let interval;  // Переменная для хранения интервала переключения моделей
+
+        //освещение
         const light = new THREE.DirectionalLight(0xffffff, 1);
         light.position.set(10, 10, 10);
         scene.add(light);
-
         const ambientLight = new THREE.AmbientLight(0x404040); // мягкий свет
         scene.add(ambientLight);
 
@@ -306,7 +311,10 @@
 
             loadingElement.style.display = 'none';  // Убираем надпись "Loading please wait"
             requestAnimationFrame(updateRotation);  // Запускаем анимацию
+
         }
+
+        
 
         // Загрузка первой модели и начало анимации против часовой
         loader.load(modelUrls[0], function (gltf) {
@@ -314,12 +322,53 @@
             currentModel.scale.set(1.0, 1.3, 1.0);
             currentModel.rotation.y = 0;  // Начинаем с 0 градусов
             scene.add(currentModel);
+
+
             //анимация кивания у первой модели
             const mixer = new THREE.AnimationMixer(currentModel);
-            const clip = gltf.animations.find((clip) => clip.name === 'HeadAction');
-            const action = mixer.clipAction(clip);
-            action.play();
+            // Задержка перед первым запуском анимации
+            setTimeout(() => {
+                // Нахождение анимации и запуск
+                const moving = gltf.animations.find((moving) => moving.name === '1Moving');
+                const actionMoving = mixer.clipAction(moving);
 
+                // Функция для воспроизведения анимации с интервалом
+                function playAnimation() {
+                    actionMoving.play();
+
+                    // Остановка анимации через 5 секунд
+                    setTimeout(() => {
+                        actionMoving.stop();
+                    }, 5000);
+
+                    // Повторный запуск функции через 10 секунд
+                    setTimeout(playAnimation, 10000);
+                }
+
+                // Запуск функции через 7 секунд
+                setTimeout(playAnimation, 7000);
+            }, 7000);
+
+            // Задержка перед первым запуском скрипта
+            setTimeout(() => {
+                // Циклический запуск скрипта каждые 10 секунд на 2 секунды
+                setInterval(() => {
+                    const blink = gltf.animations.find((blink) => blink.name === '2Blinking');
+                    const actionBlink = mixer.clipAction(blink);
+                    actionBlink.play();
+
+                    // Остановка анимации через 2 секунды
+                    setTimeout(() => {
+                        actionBlink.stop();
+                    }, 2500);
+                }, 10000);
+            }, 5000);
+
+            /*
+            const speak = gltf.animations.find((speak) => speak.name === '3Speaking');
+            const actionSpeak = mixer.clipAction(speak);
+            actionSpeak.play();
+            */
             rotateModelRightToLeft();  // Плавно поворачиваем модель до 180 градусов
             animate(mixer);  // Запуск анимации сцены
         }, function (xhr) {
@@ -331,16 +380,17 @@
         const clock = new THREE.Clock();
         //animate(mixer);
         // Анимация сцены
-        function animate(mixer) {
-            requestAnimationFrame(() => animate(mixer));
+        function animate(mixer, model) {
+            requestAnimationFrame(() => animate(mixer, model));
 
             const delta = clock.getDelta();
             mixer.update(delta);
 
+
             renderer.render(scene, camera);
         }
 
-        
+
 
     </script>
 </body>
