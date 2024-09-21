@@ -1,0 +1,66 @@
+/* старая реализация
+        function sendRequest() {
+            const text = document.getElementById('text-input').value;
+
+            var question = JSON.stringify({ question: text });
+
+
+            fetch('../web/questions.json')
+                .then(response => response.json())
+
+                .then(jsonData => {
+                    const audio = new Audio(jsonData.audio_file);
+                    startTalking();
+                    audio.play();
+                    audio.onended = function () {
+                        stopTalking();
+                    };
+                    document.getElementById('text-input').value = '';
+                    document.getElementById('response-text').innerText = jsonData.reply;
+                    adjustTextareaHeight(document.getElementById('response-text'));
+
+                });
+
+
+
+        }
+        //реализация с question.json по полю audio_file
+        function sendRequest() {
+            const text = document.getElementById('text-input').value;
+
+            fetch('../web/questions.json')
+                .then(response => response.json())
+                .then(jsonData => {
+                    // Найти соответствующий вопрос
+                    const matchedQuestion = jsonData.find(item => item.question === text);
+
+                    if (matchedQuestion) {
+                        // Создать и воспроизвести аудио
+                        const audio = new Audio(matchedQuestion.audio_file);
+                        startTalking();
+                        audio.play();
+                        audio.onended = function () {
+                            stopTalking();
+                        };
+                        // Обновить текст ответа
+                        document.getElementById('text-input').value = '';
+                        document.getElementById('response-text').innerText = matchedQuestion.reply;
+                        adjustTextareaHeight(document.getElementById('response-text'));
+                    } else {
+                        // Если вопрос не найден, можно показать сообщение или выполнить другую логику
+                        document.getElementById('response-text').innerText = 'Вопрос не найден.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при загрузке данных:', error);
+                });
+        }
+
+        */
+
+
+        /*
+            const speak = gltf.animations.find((speak) => speak.name === '3Speaking');
+            const actionSpeak = mixer.clipAction(speak);
+            actionSpeak.play();
+            */

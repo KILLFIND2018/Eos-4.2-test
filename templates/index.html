@@ -167,91 +167,6 @@
                     console.error('Ошибка при загрузке данных:', error);
                 });
         }
-        /* старая реализация
-        function sendRequest() {
-            const text = document.getElementById('text-input').value;
-
-            var question = JSON.stringify({ question: text });
-
-
-            fetch('../web/questions.json')
-                .then(response => response.json())
-
-                .then(jsonData => {
-                    const audio = new Audio(jsonData.audio_file);
-                    startTalking();
-                    audio.play();
-                    audio.onended = function () {
-                        stopTalking();
-                    };
-                    document.getElementById('text-input').value = '';
-                    document.getElementById('response-text').innerText = jsonData.reply;
-                    adjustTextareaHeight(document.getElementById('response-text'));
-
-                });
-
-
-
-        }
-        //реализация с question.json по полю audio_file
-        function sendRequest() {
-            const text = document.getElementById('text-input').value;
-
-            fetch('../web/questions.json')
-                .then(response => response.json())
-                .then(jsonData => {
-                    // Найти соответствующий вопрос
-                    const matchedQuestion = jsonData.find(item => item.question === text);
-
-                    if (matchedQuestion) {
-                        // Создать и воспроизвести аудио
-                        const audio = new Audio(matchedQuestion.audio_file);
-                        startTalking();
-                        audio.play();
-                        audio.onended = function () {
-                            stopTalking();
-                        };
-                        // Обновить текст ответа
-                        document.getElementById('text-input').value = '';
-                        document.getElementById('response-text').innerText = matchedQuestion.reply;
-                        adjustTextareaHeight(document.getElementById('response-text'));
-                    } else {
-                        // Если вопрос не найден, можно показать сообщение или выполнить другую логику
-                        document.getElementById('response-text').innerText = 'Вопрос не найден.';
-                    }
-                })
-                .catch(error => {
-                    console.error('Ошибка при загрузке данных:', error);
-                });
-        }
-
-        */
-
-        // Функция для начала анимации "говорения"
-        function startTalking() {
-            clearInterval(interval);  // Останавливаем вращение моделей
-            rotateModelRightToLeft('/static/models/android.glb');  // Загружаем специальную модель для "говорения"
-
-
-
-        }
-
-        // Функция для остановки анимации "говорения" и возвращения к обычной ротации моделей
-        function stopTalking() {
-            startModelRotation();  // Возобновляем вращение моделей
-        }
-
-        document.getElementById('send-button').addEventListener('click', sendRequest);
-
-        document.getElementById('text-input').addEventListener('keypress', function (event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault();
-                sendRequest();
-
-            }
-        });
-
-
 
         // Three.js scene setup
         const scene = new THREE.Scene();
@@ -262,13 +177,10 @@
         renderer.setSize(window.innerWidth, window.innerHeight * 0.6);  // Устанавливаем размер рендерера
         document.getElementById('container').appendChild(renderer.domElement);
 
-
-
-
         const loader = new THREE.GLTFLoader();  // Создаем загрузчик GLTF моделей
         const loadingElement = document.getElementById('loading');  // Элемент для отображения статуса загрузки
         let currentModel;  // Переменная для текущей модели
-        const modelUrls = ['/static/models/android.glb'];  // URL-адреса моделей в будущем будет
+        const modelUrls = ['/static/models/android.glb'];  // URL-адреса моделей
         let interval;  // Переменная для хранения интервала переключения моделей
 
         //освещение
@@ -314,15 +226,12 @@
 
         }
 
-        
-
         // Загрузка первой модели и начало анимации против часовой
         loader.load(modelUrls[0], function (gltf) {
             currentModel = gltf.scene;
             currentModel.scale.set(1.0, 1.3, 1.0);
             currentModel.rotation.y = 0;  // Начинаем с 0 градусов
             scene.add(currentModel);
-
 
             //анимация кивания у первой модели
             const mixer = new THREE.AnimationMixer(currentModel);
@@ -364,11 +273,6 @@
                 }, 10000);
             }, 5000);
 
-            /*
-            const speak = gltf.animations.find((speak) => speak.name === '3Speaking');
-            const actionSpeak = mixer.clipAction(speak);
-            actionSpeak.play();
-            */
             rotateModelRightToLeft();  // Плавно поворачиваем модель до 180 градусов
             animate(mixer);  // Запуск анимации сцены
         }, function (xhr) {
@@ -377,20 +281,26 @@
             console.error(error);
             loadingElement.innerText = 'Failed to load model';
         });
+
         const clock = new THREE.Clock();
-        //animate(mixer);
         // Анимация сцены
-        function animate(mixer, model) {
-            requestAnimationFrame(() => animate(mixer, model));
+        function animate(mixer) {
+            requestAnimationFrame(() => animate(mixer));
 
             const delta = clock.getDelta();
             mixer.update(delta);
 
-
             renderer.render(scene, camera);
         }
 
+        document.getElementById('send-button').addEventListener('click', sendRequest);
 
+        document.getElementById('text-input').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendRequest();
+            }
+        });
 
     </script>
 </body>
